@@ -300,8 +300,15 @@ void Population::evaluate_o(int choice, int choice_2, int random_seed, int srand
 
 void Population::stats(int& total_super_individuals, int& total_semi_super_individuals)
 {
+    // TEST
+    // std::cout << "POP::STATS: Top\n\n";
+
     sum_fitness = convergence = 0;
     min = max = members[0].get_fitness();
+    
+    // TEST
+    // std::cout << "POP::STATS: below members[0].get_fitness()\n\n";
+
     max_fitness_member_index = 0;
     double fitness = -1;
     for(int i = 0; i < options.population_size; i++)

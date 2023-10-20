@@ -14,21 +14,6 @@ double eval(Individual& individual, int choice, int choice_2, int random_seed, i
     switch(choice)
     {
         case 1:
-            fitness = deJong_F1(individual);
-            break;
-        case 2:
-            fitness = deJong_F2(individual);
-            break;
-        case 3:
-            fitness = deJong_F3(individual);
-            break;
-        case 4:
-            fitness = deJong_F4(individual, random_seed, srand_offset);
-            break;
-        case 5:
-            fitness = deJong_F5(individual);
-            break;
-        case 6:
             try
                 {fitness = floorPlanning(individual, variable_count, bit_length, scaler, max_variable_value, weight_normal, weight_special, choice_2);}
             catch(double variable_value[])
@@ -47,21 +32,6 @@ double eval_o(Individual& individual, int choice, int choice_2, int random_seed,
     switch(choice)
     {
         case 1:
-            objective = deJong_F1_o(individual);
-            break;
-        case 2:
-            objective = deJong_F2_o(individual);
-            break;
-        case 3:
-            objective = deJong_F3_o(individual);
-            break;
-        case 4:
-            objective = deJong_F4_o(individual, random_seed, srand_offset);
-            break;
-        case 5:
-            objective = deJong_F5_o(individual);
-            break;
-        case 6:
             try
                 {objective = floorPlanning(individual, variable_count, bit_length, scaler, max_variable_value, weight_normal, weight_special, choice_2);}
             catch(double variable_value[])

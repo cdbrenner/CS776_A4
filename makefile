@@ -1,10 +1,5 @@
-all: x exhaust
-
 x: main.cpp evaluate.o individual.o helpers.o population.o test.o ga.o options.h
 	g++ -o x main.cpp evaluate.o individual.o helpers.o population.o test.o ga.o
-
-exhaust: exhaust.cpp
-	g++ -o exhaust exhaust.cpp
 
 evaluate.o: evaluate.cpp evaluate.h
 	g++ -c evaluate.cpp

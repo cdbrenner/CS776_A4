@@ -4,38 +4,49 @@
 //AFTER TESTING REPORT CLEANUP FROM GA.CPP NEEDS TO BE COMMENTED BACK IN 
 int main(int argc, char* argv[])
 {
-    if(argc == 1)
-    {
-        std::cout << "If report is needed, must set argv[1] = 1; otherwise reporting is skipped" << std::endl;
-        std::cout << "If multiple runs are needed, must set argv[2] = #runs; 1 run by default" << std::endl;
-        std::cout << "GA type is CHC by default. If a different version is required, set argv[3] to one of the following options:" << std::endl;
-        std::cout << "  1. Simple GA" << std::endl;
-        std::cout << "  2. Simple GA w/extinction event" << std::endl;
-        std::cout << "  3. CHC" << std::endl;
-        std::cout << "  4. CHC w/extinction event" << std::endl;
-        std::cout << "If runtime change to mutation probability is required, set argv[4] = mutation probability" << std::endl;
-        std::cout << "  - Note: Currently, argv[4] will take an interger and divide it by 10 to get the actual mutation probability e.g. argv[4] = 1)" << std::endl;
-        std::cout << "      - e.g. argv[4] = 1 converts to mutation_probability = 0.1" << std::endl;
-        std::cout << "If runtime change to xover probability is required, set argv[5] = xover probability" << std::endl;
-        std::cout << "  - Note: Currently, argv[5] will take an interger and divide it by 10 to get the actual mutation probability e.g. argv[4] = 1)" << std::endl;
-        std::cout << "      - e.g. argv[4] = 1 converts to mutation_probability = 0.1" << std::endl;
-        std::cout << "  - Note: If no runtime change to mutation probability is required, you must set argv[4] = -1" << std::endl;
-    }
+    std::cout << "If report is needed, must set argv[1] = 1; otherwise reporting is skipped." << std::endl;
+    std::cout << "If multiple runs are needed, must set argv[2] = #runs; 1 run by default." << std::endl;
+    std::cout << "GA type is CHC by default. If a different version is required, set argv[3] to one of the following options:" << std::endl;
+    std::cout << "  1. Simple GA" << std::endl;
+    std::cout << "  2. Simple GA w/extinction event" << std::endl;
+    std::cout << "  3. CHC" << std::endl;
+    std::cout << "  4. CHC w/extinction event" << std::endl;
+    std::cout << "If runtime change to mutation probability is required, set argv[4] = mutation probability." << std::endl;
+    std::cout << "  - Note: Currently, argv[4] will take an interger and divide it by 10 to get the actual mutation probability)" << std::endl;
+    std::cout << "      - e.g. argv[4] = 1 converts to mutation_probability = 0.1" << std::endl;
+    std::cout << "If runtime change to xover probability is required, set argv[5] = xover probability." << std::endl;
+    std::cout << "  - Note: Currently, argv[5] will take an interger and divide it by 10 to get the actual mutation probability)" << std::endl;
+    std::cout << "      - e.g. argv[5] = 1 converts to xover_probability = 0.1" << std::endl;
+    std::cout << "  - Note: If no runtime change to mutation probability is required, you must set argv[4] = -1" << std::endl;
 
     int report_option = 0;
     int runs = 1;
-    int ga_variant_option = 1;
+    int ga_variant_option = 3;
     double mutation_probability = -1;
     double xover_probability = -1;
+    int eval_option = 1;
     
     if(argc == 2)
     {
         report_option = std::stoi(argv[1]);
+        if(report_option != 0 && report_option != 1)
+        {
+            std::cout << "Can only choose 0 or 1 as a report option (reporting or no reporting, respectively)" << std::endl;
+            std::cout << "Switching to no reporting by default" << std::endl;
+            report_option = 0;
+        }
     }
     
     if(argc == 3)
     {
         report_option = std::stoi(argv[1]);
+        if(report_option != 0 && report_option != 1)
+        {
+            std::cout << "Can only choose 0 or 1 as a report option (reporting or no reporting, respectively)" << std::endl;
+            std::cout << "Switching to no reporting by default" << std::endl;
+            report_option = 0;
+        }
+
         runs = std::stoi(argv[2]);
         if(runs <= 0 || runs > 10)
         {
@@ -48,17 +59,22 @@ int main(int argc, char* argv[])
     if(argc == 4)
     {
         report_option = std::stoi(argv[1]);
+        if(report_option != 0 && report_option != 1)
+        {
+            std::cout << "Can only choose 0 or 1 as a report option (reporting or no reporting, respectively)" << std::endl;
+            std::cout << "Switching to no reporting by default" << std::endl;
+            report_option = 0;
+        }
+
         runs = std::stoi(argv[2]);
-        ga_variant_option = std::stoi(argv[3]);
-
-
-
         if(runs <= 0 || runs > 10)
         {
             std::cout << "Can only choose up to 10 runs maximum" << std::endl;
             std::cout << "Switching to 1 run by default" << std::endl;
             runs = 1;
         }
+
+        ga_variant_option = std::stoi(argv[3]);
         if(ga_variant_option <= 0 || ga_variant_option > 4)
         {
             std::cout << "List of available variants" << std::endl;
@@ -66,26 +82,31 @@ int main(int argc, char* argv[])
             std::cout << "2. Simple GA w/extinction event" << std::endl;
             std::cout << "3. CHC" << std::endl;
             std::cout << "4. CHC w/extinction event" << std::endl;
-            std::cout << "Switching to option 2 (CHC) by default" << std::endl;
+            std::cout << "Switching to option 3 (CHC) by default" << std::endl;
             runs = 1;
-            ga_variant_option = 1;
+            ga_variant_option = 3;
         }
     }
     
     if(argc == 5)
     {
         report_option = std::stoi(argv[1]);
-        runs = std::stoi(argv[2]);
-        ga_variant_option = std::stoi(argv[3]);
-        mutation_probability = std::strtod(argv[4], NULL);
-        mutation_probability /= 10;
+        if(report_option != 0 && report_option != 1)
+        {
+            std::cout << "Can only choose 0 or 1 as a report option (reporting or no reporting, respectively)" << std::endl;
+            std::cout << "Switching to no reporting by default" << std::endl;
+            report_option = 0;
+        }
 
+        runs = std::stoi(argv[2]);
         if(runs <= 0 || runs > 10)
         {
             std::cout << "Can only choose up to 10 runs maximum" << std::endl;
             std::cout << "Switching to 1 run by default" << std::endl;
             runs = 1;
         }
+        
+        ga_variant_option = std::stoi(argv[3]);
         if(ga_variant_option <= 0 || ga_variant_option > 4)
         {
             std::cout << "List of available variants" << std::endl;
@@ -96,6 +117,9 @@ int main(int argc, char* argv[])
             std::cout << "Switching to option 3 (CHC) by default" << std::endl;
             ga_variant_option = 3;
         }
+
+        mutation_probability = std::strtod(argv[4], NULL);
+        mutation_probability /= 10;
         if(mutation_probability <= 0 || mutation_probability >= 1)
         {
             std::cout << "Mutation probability can only be given between 0 - 1" << std::endl;
@@ -106,23 +130,22 @@ int main(int argc, char* argv[])
     if(argc == 6)
     {
         report_option = std::stoi(argv[1]);
+        if(report_option != 0 && report_option != 1)
+        {
+            std::cout << "Can only choose 0 or 1 as a report option (reporting or no reporting, respectively)" << std::endl;
+            std::cout << "Switching to no reporting by default" << std::endl;
+            report_option = 0;
+        }
+
         runs = std::stoi(argv[2]);
-        ga_variant_option = std::stoi(argv[3]);
-        mutation_probability = std::strtod(argv[4], NULL);
-        mutation_probability /= 10;
-        xover_probability = std::strtod(argv[5], NULL);
-        xover_probability /= 10;
-
-        //TEST
-        // std::cout << "MAIN:ARGC==5" << std::endl;
-        // std::cout << "xover prob = " << xover_probability << std::endl;
-
         if(runs <= 0 || runs > 10)
         {
             std::cout << "Can only choose up to 10 runs maximum" << std::endl;
             std::cout << "Switching to 1 run by default" << std::endl;
             runs = 1;
         }
+        
+        ga_variant_option = std::stoi(argv[3]);
         if(ga_variant_option <= 0 || ga_variant_option > 4)
         {
             std::cout << "List of available variants" << std::endl;
@@ -133,11 +156,17 @@ int main(int argc, char* argv[])
             std::cout << "Switching to option 3 (CHC) by default" << std::endl;
             ga_variant_option = 3;
         }
+        
+        mutation_probability = std::strtod(argv[4], NULL);
+        mutation_probability /= 10;
         if(mutation_probability <= 0 || mutation_probability >= 1)
         {
             std::cout << "Mutation probability can only be given between 0 - 1" << std::endl;
             mutation_probability = -1;
         }
+        
+        xover_probability = std::strtod(argv[5], NULL);
+        xover_probability /= 10;
         if(xover_probability <= 0 || xover_probability >= 1)
         {
             std::cout << "Xover probability can only be given between 0 - 1" << std::endl;
@@ -145,8 +174,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    //TEST
-    // std::cout << "MAIN::RUN = " << j << std::endl << std::endl;
     switch(ga_variant_option)
     {
         case 1:
@@ -166,7 +193,7 @@ int main(int argc, char* argv[])
     for(int j = 0; j < runs; j++)
     {
 
-        GA ga(argc, argv, 6, j, ga_variant_option, mutation_probability, xover_probability);
+        GA ga(argc, argv, eval_option, j, ga_variant_option, mutation_probability, xover_probability);
         
         switch(ga_variant_option)
         {
@@ -289,6 +316,9 @@ int main(int argc, char* argv[])
                 // else if(argc < 5)
                 else
                 {
+                    //TEST
+                    std::cout << "::MAIN:: SETTING CHC OPTIONS\n\n";
+
                     ga.set_option_mutation_prob(0.1);
                     ga.set_option_xover_prob(0.5);
                     ga.set_option_ga_variant_name("CHC");
@@ -338,7 +368,7 @@ int main(int argc, char* argv[])
         }
 
         try
-            {ga.init(6, report_option);}
+            {ga.init(eval_option, report_option);}
         catch(double variable_value[])
         {
 
@@ -372,7 +402,7 @@ int main(int argc, char* argv[])
         }
 
         try
-            {ga.run(6, report_option);}
+            {ga.run(eval_option, report_option);}
         catch(double variable_value[])
         {
 
@@ -420,100 +450,73 @@ int main(int argc, char* argv[])
         // count++;
     }
 
-    GA ga(argc, argv, 6, runs, ga_variant_option, mutation_probability, xover_probability);
-    switch(ga_variant_option)
+    // FILENAME SETUP FOR REPORT AVERAGER (REPORT AVERAGER RUNS AFTER FILENAME SETUP)
+    if(report_option == 1)
     {
-        case 1:
-            if(argc == 6 && xover_probability != -1 && mutation_probability != -1)
-            {
-                std::stringstream ss;
-                std::string temp_1;
-                std::string temp_2;
-                ss.precision(2);
-                ss << xover_probability;
-                ss >> temp_1;
-                ss.clear();
-                ss << mutation_probability;
-                ss >> temp_2;
-                std::string temp_3 = "S_probM-" + temp_2 + "S_probX-" + temp_1;
-                ga.set_option_ga_variant_name(temp_3);
-            }
-            // if(argc == 5 && mutation_probability != -1)
-            // {
-            //     std::stringstream ss;
-            //     std::string temp_1;
-            //     ss.precision(2);
-            //     ss << mutation_probability;
-            //     ss >> temp_1;
-            //     std::string temp_2 = "S_probM-" + temp_1;
-            //     ga.set_option_ga_variant_name(temp_2);
-            // }
-            else
-            {
-                ga.set_option_ga_variant_name("S");
-            }
-            break;
-        case 2:
-            if(argc == 6 && xover_probability != -1 && mutation_probability != -1)
-            {
-                std::stringstream ss;
-                std::string temp_1;
-                std::string temp_2;
-                ss.precision(2);
-                ss << xover_probability;
-                ss >> temp_1;
-                ss.clear();
-                ss << mutation_probability;
-                ss >> temp_2;
-                std::string temp_3 = "S-E_probM-" + temp_2 + "S-E_probX-" + temp_1;
-                ga.set_option_ga_variant_name(temp_3);
-            }
-            // if(argc == 5 && mutation_probability != -1)
-            // {
-            //     std::stringstream ss;
-            //     std::string temp_1;
-            //     ss.precision(2);
-            //     ss << mutation_probability;
-            //     ss >> temp_1;
-            //     std::string temp_2 = "S-E_probM-" + temp_1;
-            //     ga.set_option_ga_variant_name(temp_2);
-            // }
-            else
-            {
-                ga.set_option_ga_variant_name("S-E"); // THIS NAME IS BEING USED TO TRIGGER PROPER EXTINCTION_EVENT
-            }
-            break;
-        case 3:
-        if(argc == 6 && xover_probability != -1 && mutation_probability != -1)
+        GA ga(argc, argv, eval_option, runs, ga_variant_option, mutation_probability, xover_probability);
+        switch(ga_variant_option)
         {
-            std::stringstream ss;
-            std::string temp_1;
-            std::string temp_2;
-            ss.precision(2);
-            ss << xover_probability;
-            ss >> temp_1;
-            ss.clear();
-            ss << mutation_probability;
-            ss >> temp_2;
-            std::string temp_3 = "CHC_probM-" + temp_2 + "CHC_probX-" + temp_1;
-            ga.set_option_ga_variant_name(temp_3);
-        }
-            // if(argc == 5 && mutation_probability != -1)
-            // {
-            //     std::stringstream ss;
-            //     std::string temp_1;
-            //     ss.precision(2);
-            //     ss << mutation_probability;
-            //     ss >> temp_1;
-            //     std::string temp_2 = "CHC_probM-" + temp_1;
-            //     ga.set_option_ga_variant_name(temp_2);
-            // }
-            else
-            {
-                ga.set_option_ga_variant_name("CHC");
-            }
-            break;
-        case 4:
+            case 1:
+                if(argc == 6 && xover_probability != -1 && mutation_probability != -1)
+                {
+                    std::stringstream ss;
+                    std::string temp_1;
+                    std::string temp_2;
+                    ss.precision(2);
+                    ss << xover_probability;
+                    ss >> temp_1;
+                    ss.clear();
+                    ss << mutation_probability;
+                    ss >> temp_2;
+                    std::string temp_3 = "S_probM-" + temp_2 + "S_probX-" + temp_1;
+                    ga.set_option_ga_variant_name(temp_3);
+                }
+                // if(argc == 5 && mutation_probability != -1)
+                // {
+                //     std::stringstream ss;
+                //     std::string temp_1;
+                //     ss.precision(2);
+                //     ss << mutation_probability;
+                //     ss >> temp_1;
+                //     std::string temp_2 = "S_probM-" + temp_1;
+                //     ga.set_option_ga_variant_name(temp_2);
+                // }
+                else
+                {
+                    ga.set_option_ga_variant_name("S");
+                }
+                break;
+            case 2:
+                if(argc == 6 && xover_probability != -1 && mutation_probability != -1)
+                {
+                    std::stringstream ss;
+                    std::string temp_1;
+                    std::string temp_2;
+                    ss.precision(2);
+                    ss << xover_probability;
+                    ss >> temp_1;
+                    ss.clear();
+                    ss << mutation_probability;
+                    ss >> temp_2;
+                    std::string temp_3 = "S-E_probM-" + temp_2 + "S-E_probX-" + temp_1;
+                    ga.set_option_ga_variant_name(temp_3);
+                }
+                // if(argc == 5 && mutation_probability != -1)
+                // {
+                //     std::stringstream ss;
+                //     std::string temp_1;
+                //     ss.precision(2);
+                //     ss << mutation_probability;
+                //     ss >> temp_1;
+                //     std::string temp_2 = "S-E_probM-" + temp_1;
+                //     ga.set_option_ga_variant_name(temp_2);
+                // }
+                else
+                {
+                    ga.set_option_ga_variant_name("S-E"); // THIS NAME IS BEING USED TO TRIGGER PROPER EXTINCTION_EVENT
+                }
+                break;
+            case 3:
             if(argc == 6 && xover_probability != -1 && mutation_probability != -1)
             {
                 std::stringstream ss;
@@ -525,27 +528,57 @@ int main(int argc, char* argv[])
                 ss.clear();
                 ss << mutation_probability;
                 ss >> temp_2;
-                std::string temp_3 = "CHC-E_probM-" + temp_2 + "CHC-E_probX-" + temp_1;
+                std::string temp_3 = "CHC_probM-" + temp_2 + "CHC_probX-" + temp_1;
                 ga.set_option_ga_variant_name(temp_3);
             }
-            // if(argc == 5 && mutation_probability != -1)
-            // {
-            //     std::stringstream ss;
-            //     std::string temp_1;
-            //     ss.precision(2);
-            //     ss << mutation_probability;
-            //     ss >> temp_1;
-            //     std::string temp_2 = "CHC-E_probM-" + temp_1;
-            //     ga.set_option_ga_variant_name(temp_2);
-            // }
-            else
-            {
-                ga.set_option_ga_variant_name("CHC-E");
-            }
-            break;
+                // if(argc == 5 && mutation_probability != -1)
+                // {
+                //     std::stringstream ss;
+                //     std::string temp_1;
+                //     ss.precision(2);
+                //     ss << mutation_probability;
+                //     ss >> temp_1;
+                //     std::string temp_2 = "CHC_probM-" + temp_1;
+                //     ga.set_option_ga_variant_name(temp_2);
+                // }
+                else
+                {
+                    ga.set_option_ga_variant_name("CHC");
+                }
+                break;
+            case 4:
+                if(argc == 6 && xover_probability != -1 && mutation_probability != -1)
+                {
+                    std::stringstream ss;
+                    std::string temp_1;
+                    std::string temp_2;
+                    ss.precision(2);
+                    ss << xover_probability;
+                    ss >> temp_1;
+                    ss.clear();
+                    ss << mutation_probability;
+                    ss >> temp_2;
+                    std::string temp_3 = "CHC-E_probM-" + temp_2 + "CHC-E_probX-" + temp_1;
+                    ga.set_option_ga_variant_name(temp_3);
+                }
+                // if(argc == 5 && mutation_probability != -1)
+                // {
+                //     std::stringstream ss;
+                //     std::string temp_1;
+                //     ss.precision(2);
+                //     ss << mutation_probability;
+                //     ss >> temp_1;
+                //     std::string temp_2 = "CHC-E_probM-" + temp_1;
+                //     ga.set_option_ga_variant_name(temp_2);
+                // }
+                else
+                {
+                    ga.set_option_ga_variant_name("CHC-E");
+                }
+                break;
+        }
+        ga.report_averager(runs);
     }
-    ga.report_averager(runs);
-
     //TEST
     // std::cout << "OUTSIDE OF RUN: END OF PROGRAM" << std::endl;
 
