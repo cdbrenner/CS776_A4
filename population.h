@@ -25,6 +25,18 @@ class Population
         double* max_fitness_dimensions = nullptr;
         int max_fitness_member_index = -1;
 
+        //PMX
+        int pmx_indices[2];
+
+        // PMX UNIT TESTING DATA STORED IN THE FOLLOWING ARRAYS:
+            // INDICES_ACCOUNTED_FOR WILL STORE INDICES OF ALLELES THAT HAVE ALREADY BEEN PROVIDED TO THE CHILD BY THE OPPOSITE PARENT
+            // FIRST ELEMENT [0] = LENGTH OF DATA ELEMENTS IN ARRAY
+            int m_indices_accounted_1[400];
+            int m_indices_accounted_2[400];
+            // INDICES TO CHANGE WILL FIRST BE INITIALIZED WITH ALL 1s. ONCE INDICES ACCOUNTED FOR IS FILLED, THE ELEMENT IN INDICES_TO_CHANGE AT EACH ACCOUNTED_FOR INDEX WILL BE UPDATED TO -1
+            int m_indices_to_change_1[400];
+            int m_indices_to_change_2[400];
+
         //MEMBERS FOR TESTING PROBABILITY ACCURACY
         double proportional_fitnesses[4];
         double member_chosen_count[4];
@@ -40,6 +52,7 @@ class Population
         void set_options(Options);
         void set_members();
         void set_members(int);
+        void set_members_ptr(Individual*);
         void copy_members(const Population& population_copy);
         void copy_population(const Population& population_copy);
         void set_transform_data_by_row(int* transform_data_row, int row);
@@ -56,7 +69,7 @@ class Population
         double get_sum_fitness();
         double get_convergence();
         Options get_options();
-        bool get_is_parent();
+        int* get_pmx_indices();
 
         //FUNCTIONS FOR TESTING PROBABILITY ACCURACY
         // void set_proportional_fitnesses();
@@ -74,6 +87,8 @@ class Population
         int proportional_selection(int srand_offset);
         void xover_mutate(Individual*,Individual*,Individual*,Individual*, int);
         int one_point_xover(Individual*&,Individual*&,Individual*&,Individual*&, int);
+        void pmx(Individual*,Individual*,Individual*,Individual*, int);
+
 
         //TEST
         void print_pop();

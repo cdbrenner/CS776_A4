@@ -32,15 +32,16 @@ class Individual
 
         Individual();
         Individual(int);
+        Individual(int, int*);
         Individual(const Individual& rhs);
         ~Individual();
 
         void set_chromosome_length(int);
+        void set_chromosome(int chromosome_length, int* chromosome);
         void set_chromosome_element(int index, int value);
         void set_fitness(double);
         void set_objective_value(double);
         void set_dimensions(double* dynamic_dimensions_data, int dimensions_count);
-        // void set_transform_data_by_element(int index, int value);
 
         int* get_chromosome();
         int get_chromosome_length();
@@ -58,6 +59,9 @@ class Individual
         void init(int random_seed, int srand_offset);
         void mutate(double probability, int random_seed, int srand_offset);
         void copy_individual_data(const Individual& individual_copy);
+
+        // TSP
+        void swap_mutate(double probability, int random_seed, int srand_offset);
 
         //TEST FUNCTIONS
         void print_ind();

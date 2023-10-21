@@ -78,8 +78,20 @@ Population::Population(Options options, int srand_offset)
 
 Population::Population(Population& rhs)
 {
+
+    // TEST
+    std::cout << "POP::COPY_CONSTRUCTOR: Top\n\n";
+    
     options = rhs.options;
+
+    // TEST
+    std::cout << "POP::COPY_CONSTRUCTOR: below set options\n\n";
+    
     members = new Individual[options.population_size];
+
+    // TEST
+    std::cout << "POP::COPY_CONSTRUCTOR: below members = new Individual[]\n\n";
+
     for(int i = 0; i < options.population_size; i++)
     {
         // members[i].init_chromosome_array(options.chromosome_length);
@@ -130,6 +142,11 @@ void Population::set_members(int srand_offset)
         members[i].set_chromosome_length(this->options.chromosome_length);
         members[i].init(options.random_seed, srand_offset*options.population_size + i);
     }
+}
+
+void Population::set_members_ptr(Individual* mem)
+{
+    members = mem;
 }
 
 void Population::copy_members(const Population &copy)
@@ -262,6 +279,11 @@ void Population::get_member_chosen_stats()
 Options Population::get_options()
 {
     return options;
+}
+
+int* Population::get_pmx_indices()
+{
+    return pmx_indices;
 }
 
 //CHOICE CHOOSES WHICH OBJECTIVE FUNCTION TO EVALUATE
@@ -567,13 +589,6 @@ void Population::xover_mutate(Individual* parent_1, Individual* parent_2, Indivi
     verify_string_equivalence(parent_1, &test_1_p1, "POP::XOVER_MUTATE, AFTER SETTING CHILD = PARENT");
     verify_string_equivalence(parent_2, &test_2_p2, "POP::XOVER_MUTATE, AFTER SETTING CHILD = PARENT");
 
-    
-    //TEST
-    // std::cout << "POP::XOVER" << std::endl;
-    // std::cout << "probability_x = " << options.probability_x << std::endl;
-    // char t;
-    // std::cin >> t;
-
     int index = -1;
     if(flip(options.probability_x, options.random_seed, srand_offset))
         index = one_point_xover(parent_1, parent_2, child_1, child_2, srand_offset);
@@ -602,6 +617,341 @@ int Population::one_point_xover(Individual*& parent_1, Individual*& parent_2, In
     }
 
     return index;
+}
+
+// THIS PMX FUNCTION ASSUMES THAT CHILD_1/CHILD_2 IS ALREADY A COPY OF PARENT_1/PARENT_2
+void Population::pmx(Individual* parent_1, Individual* parent_2, Individual* child_1, Individual* child_2, int srand_offset)
+{
+    // REAL
+    int index_1 = random_index_in_range(0, options.chromosome_length, options.random_seed, srand_offset);
+    //TEST
+    // int index_1 = 18;
+
+    int index_2 = -1;
+    if(index_1 != options.chromosome_length - 2)
+    {
+        index_2 = random_index_in_range(index_1, options.chromosome_length - 1, options.random_seed, srand_offset);
+        index_2 += 1; //ENSURES ITS AT LEAST ONE INDEX FURTHER THAN INDEX_1
+    }
+
+    // TEST
+    // std::cout << "POP::PMX: top" << std::endl;
+    // std::cout << "parent_1:" << std::endl;
+    // parent_1->print_ind();
+    // std::cout << "parent_2:" << std::endl;
+    // parent_2->print_ind();
+    // std::cout << std::endl;
+
+    // TEST
+    // int index_1 = 2;
+    // int index_2 = 7;
+
+    pmx_indices[0] = index_1;
+    pmx_indices[1] = index_2;
+
+    if(index_2 != -1)
+    {
+        // INDICES_ACCOUNTED_FOR WILL STORE INDICES OF ALLELES THAT HAVE ALREADY BEEN PROVIDED TO THE CHILD BY THE OPPOSITE PARENT
+        int indices_accounted_1[400];
+        int indices_accounted_2[400];
+
+        // INDICES TO CHANGE WILL FIRST BE INITIALIZED WITH ALL 1s. ONCE INDICES ACCOUNTED FOR IS FILLED, THE ELEMENT IN INDICES_TO_CHANGE AT EACH ACCOUNTED_FOR INDEX WILL BE UPDATED TO -1
+        int indices_to_change_1[400];
+        int indices_to_change_2[400];
+
+        int count_1 = 0;
+        int count_2 = 0;
+        for(int i = 0; i < options.chromosome_length; i++)
+        {
+            if(i >= (index_1 + 1) & i <= index_2)
+            {
+                indices_accounted_1[count_1++] = i;
+                indices_accounted_2[count_2++] = i;
+            }
+            else
+            {
+                indices_accounted_1[i] = -1;
+                indices_accounted_2[i] = -1;
+            }
+            
+            
+            indices_to_change_1[i] = 1;
+            indices_to_change_2[i] = 1;
+        }
+
+        // TEST
+        // std::cout << "POP::PMX: after setting indices arrays" << std::endl;
+        // std::cout << "indices_accounted_1" << std::endl;
+        // for(int i = 0; i < count_1; i++)
+        // {
+        //     std::cout << indices_accounted_1[i];
+        // }
+        // std::cout << std::endl;
+        // std::cout << "indices_accounted_2" << std::endl;
+        // for(int i = 0; i < count_2; i++)
+        // {
+        //     std::cout << indices_accounted_2[i];
+        // }
+        // std::cout << std::endl;
+        // std::cout << "indices_to_change_1" << std::endl;
+        // for(int i = 0; i < 10; i++)
+        // {
+        //     std::cout << indices_to_change_1[i];
+        // }
+        // std::cout << std::endl;
+        // std::cout << "indices_to_change_2" << std::endl;
+        // for(int i = 0; i < 10; i++)
+        // {
+        //     std::cout << indices_to_change_2[i];
+        // }
+        // std::cout << std::endl;
+
+        bool copy_1 = false;
+        bool copy_2 = false;
+        int compare_1 = -1;
+        int compare_2 = -1;
+        for(int j = index_1 + 1; j <= index_2; j++)
+        {
+
+            copy_1 = false;
+            copy_2 = false;
+            compare_1 = parent_1->get_chromosome()[j];
+            compare_2 = parent_2->get_chromosome()[j];
+            
+            // TEST
+            // std::cout << "POP::PMX: above iteration of child_1" <<std::endl;
+            // std::cout << "index_1 = " << index_1 <<std::endl;
+            // std::cout << "index_2 = " << index_2 <<std::endl;
+            // std::cout << "count_1 = " << count_1 <<std::endl;
+            // std::cout << "compare_2 = " << compare_2 <<std::endl;
+            // std::cout << "j = " << j <<std::endl;
+            // char a;
+            //std::cin >> a;
+            
+            // CHILD_1 ALGORITHM PT2 (PLACES THE REMAINING NON-COPY VALUES OF THE PARENT_2 XOVER REGION IN THE CHILD_1 CHROMOSOME)
+            for(int i = index_1 + 1; i <= index_2; i++)
+            {
+                if(compare_2 == parent_1->get_chromosome()[i])
+                {
+                    
+                    // TEST
+                    // std::cout << "POP::PMX: if compare_2 == parent_1->get_chromosome()[i], then break" << std::endl;
+                    // std::cout << "i = " << i <<std::endl;
+                    //std::cin >> a;
+ 
+                    copy_1 = true;
+                    break;
+                }
+            }
+            if(!copy_1)
+            {
+
+                int value_to_swap = parent_1->get_chromosome()[j];
+                
+                one:
+
+                // TEST
+                // std::cout << "POP::PMX: !copy_1" << std::endl;
+                // std::cout << "copy_1 = " << copy_1 <<std::endl;
+                // std::cout << "value_to_swap = " << value_to_swap <<std::endl;
+                //std::cin >> a;
+                
+                for(int i = 0; i < options.chromosome_length; i++)
+                {
+                    // TEST
+                    // std::cout << "POP::PMX: parent 2:" << std::endl;
+                    // parent_2->print_ind();
+                    // std::cout << std::endl;
+
+                    if(parent_2->get_chromosome()[i] == value_to_swap)
+                    {
+
+                        // TEST
+                        // std::cout << "POP::PMX: parent_2->get_chromosome()[i] == value_to_swap" << std::endl;
+                        // std::cout << "parent_2->get_chromosome()[i] = " << parent_2->get_chromosome()[i] <<std::endl;
+                        // std::cout << "value_to_swap = " << value_to_swap <<std::endl;
+                        // std::cout << "i = " << i <<std::endl;
+                        //std::cin >> a;
+                        
+                        if(i >= (index_1 + 1) && i <= index_2)
+                        {
+                            value_to_swap = parent_1->get_chromosome()[i];
+
+                            // TEST
+                            // std::cout << "POP::PMX: if(i >= (index_1 + 1) && i <= index_2)" << std::endl;
+                            // std::cout << "parent_1->get_chromosome()[i] = " << parent_1->get_chromosome()[i] <<std::endl;
+                            // std::cout << "i = " << i <<std::endl;
+                            // std::cout << "value_to_swap = " << value_to_swap <<std::endl;
+                            //std::cin >> a;
+                            
+                            goto one;
+                        }
+                        else
+                        {
+                            child_1->get_chromosome()[i] = compare_2;
+                            indices_accounted_1[count_1++] = i;
+
+                            // TEST
+                            // std::cout << "POP::PMX: !!(i >= (index_1 + 1) && i <= index_2)" << std::endl;
+                            // std::cout << "child_1->get_chromosome()["<<i<<"] = " << child_1->get_chromosome()[i] <<std::endl;
+                            // std::cout << "compare_2 = " << compare_2 <<std::endl;
+                            // std::cout << "i = " << i <<std::endl;
+                            // std::cout << "indicies_accounted_1["<<count_1 - 1<<"] = " << indices_accounted_1[count_1 - 1] <<std::endl;
+                            // std::cout << "count_1 = " << count_1 <<std::endl;
+                            // std::cout << "indices_accounted_1: " <<std::endl;
+                            // for(int n = 0; n < count_1; n++)
+                            // {
+                            //     std::cout << indices_accounted_1[n];
+                            // }
+                            // std::cout << std::endl;
+                            //std::cin >> a;
+                            
+                        }
+
+                        break;
+                    }
+
+                    // TEST
+                    // std::cout << "POP::PMX: bottom of "
+                }
+            }
+            // END CHILD_1 ALGORITHM PT2
+            
+            // TEST
+            // std::cout << "POP::PMX: above iteration of child_2" <<std::endl;
+            // std::cout << "index_1 = " << index_1 <<std::endl;
+            // std::cout << "index_2 = " << index_2 <<std::endl;
+            // std::cout << "count_2 = " << count_2 <<std::endl;
+            // std::cout << "compare_1 = " << compare_1 <<std::endl;
+            // std::cout << "j = " << j <<std::endl;
+            //std::cin >> a;
+            
+
+            // CHILD_2 ALGORITHM PT2 (PLACES THE REMAINING NON-COPY VALUES OF THE PARENT_1 XOVER REGION IN THE CHILD_2 CHROMOSOME)
+            for(int i = index_1 + 1; i <= index_2; i++)
+            {
+                if(compare_1 == parent_2->get_chromosome()[i])
+                {
+
+                    // TEST
+                    // std::cout << "POP::PMX: if(compare_1 == parent_2->get_chromosome()[i]), then break" << std::endl;
+                    // std::cout << "i = " << i <<std::endl;
+                    //std::cin >> a;
+ 
+                    copy_2 = true;
+                    break;
+                }
+            }
+            if(!copy_2)
+            {
+                int value_to_swap = parent_2->get_chromosome()[j];
+                
+                two:
+
+                // TEST
+                // std::cout << "POP::PMX: !copy_2" << std::endl;
+                // std::cout << "copy_2 = " << copy_2 <<std::endl;
+                // std::cout << "value_to_swap = " << value_to_swap <<std::endl;
+                //std::cin >> a;
+                
+                for(int i = 0; i < options.chromosome_length; i++)
+                {
+                    if(parent_1->get_chromosome()[i] == value_to_swap)
+                    {
+
+                        // TEST
+                        // std::cout << "POP::PMX: if(parent_1->get_chromosome()[i] == value_to_swap)" << std::endl;
+                        // std::cout << "parent_1->get_chromosome()[i] = " << parent_1->get_chromosome()[i] <<std::endl;
+                        // std::cout << "value_to_swap = " << value_to_swap <<std::endl;
+                        //std::cin >> a;
+                        
+                        if(i >= (index_1 + 1) && i <= index_2)
+                        {
+                            value_to_swap = parent_2->get_chromosome()[i];
+
+                            // TEST
+                            // std::cout << "POP::PMX: if(i >= (index_1 + 1) && i <= index_2)" << std::endl;
+                            // std::cout << "parent_2->get_chromosome()[i] = " << parent_2->get_chromosome()[i] <<std::endl;
+                            // std::cout << "i = " << i <<std::endl;
+                            // std::cout << "value_to_swap = " << value_to_swap <<std::endl;
+                            //std::cin >> a;
+                            
+                            goto two;
+                        }
+                        else
+                        {
+                            child_2->get_chromosome()[i] = compare_1;
+                            indices_accounted_2[count_2++] = i;
+
+                            // TEST
+                            // std::cout << "POP::PMX: !!(i >= (index_1 + 1) && i <= index_2)" << std::endl;
+                            // std::cout << "child_2->get_chromosome()["<<i<<"] = " << child_2->get_chromosome()[i] <<std::endl;
+                            // std::cout << "compare_1 = " << compare_1 <<std::endl;
+                            // std::cout << "i = " << i <<std::endl;
+                            // std::cout << "indicies_accounted_2["<<count_2 - 1<<"] = " << indices_accounted_2[count_2 - 1] <<std::endl;
+                            // std::cout << "count_2 = " << count_2 <<std::endl;
+                            // std::cout << "indices_accounted_2: " <<std::endl;
+                            // for(int n = 0; n < count_2; n++)
+                            // {
+                            //     std::cout << indices_accounted_2[n];
+                            // }
+                            // std::cout << std::endl;
+                            //std::cin >> a;
+                            
+                        }
+
+                        break;
+                    }
+                }
+            }
+            //END CHILD_2 ALGORITHM PT2
+        } // END FOR
+
+        // TEST
+        // std::cout << "POP::PMX::Below non-copy insert of child 2" <<std::endl;
+        // std::cout << "child 1:" <<std::endl;
+        // child_1->print_ind();
+        // std::cout << "child 2:" <<std::endl;
+        // child_2->print_ind();
+        // std::cout <<std::endl;
+
+        // IDENTIFY REMAINING INDICES THAT NEED TO BE XOVER'D FROM PARENT TO OPPOSITE CHILD
+        for(int i = 0; i < count_1; i++) //COUNT_1 == COUNT_2 IS ALWAYS TRUE
+        {
+            indices_to_change_1[indices_accounted_1[i]] = -1;
+            indices_to_change_2[indices_accounted_2[i]] = -1;
+        }
+        for(int i = 0; i < options.chromosome_length; i++)
+        {
+            if(indices_to_change_1[i] == 1)
+                child_1->get_chromosome()[i] = parent_2->get_chromosome()[i];
+            
+            if(indices_to_change_2[i] == 1)
+                child_2->get_chromosome()[i] = parent_1->get_chromosome()[i];
+        }
+
+        //TEST
+        // std::cout << "POP::PMX: End 1\n";
+        // std::cout << "child 1:\n";
+        // for(int i = 0; i < 10; i++)
+        // {
+        //     std::cout << child_1->get_chromosome()[i];
+        // }
+        // std::cout << std::endl;
+        // std::cout << "child 2:\n";
+        // for(int i = 0; i < 10; i++)
+        // {
+        //     std::cout << child_2->get_chromosome()[i];
+        // }
+        // std::cout << std::endl;
+        // std::cout << "POP::PMX: End 2\n\n";
+
+    }
+    else // IF INDEX_1 IS THE 2ND TO LAST INDEX OF THE CHROMOSOME, RESULTS IN ONLY SWAPPING THE VERY LAST ALLELE OF THE CHROMOSOME
+    {
+        child_1->get_chromosome()[index_1 + 1] = parent_2->get_chromosome()[index_1 + 1];
+        child_2->get_chromosome()[index_1 + 1] = parent_1->get_chromosome()[index_1 + 1];
+    }
 }
 
 

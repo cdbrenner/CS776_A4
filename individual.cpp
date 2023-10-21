@@ -14,6 +14,17 @@ Individual::Individual(int length)
     fitness = -1;
 }
 
+Individual::Individual(int length, int* chromosome)
+{
+    chromosome_length = length;
+    fitness = -1;
+
+    for(int i = 0; i < chromosome_length; i++)
+    {
+        this->chromosome[i] = chromosome[i];
+    }
+}
+
 Individual::Individual(const Individual& rhs)
 {
     chromosome_length = rhs.chromosome_length;
@@ -42,6 +53,13 @@ Individual::~Individual() {}
 void Individual::set_chromosome_length(int length)
 {
     chromosome_length = length;
+}
+
+void Individual::set_chromosome(int length, int* chrom)
+{
+    chromosome_length = length;
+    for(int i = 0; i < chromosome_length; i++)
+        chromosome[i] = chrom[i];
 }
 
 void Individual::set_chromosome_element(int index, int value)
@@ -128,13 +146,6 @@ void Individual::init(int random_seed, int srand_offset)
 void Individual::mutate(double probability, int random_seed, int srand_offset)
 {
     mutate_count = 0;
-
-    //TEST
-    // std::cout << "INDIVIDUAL::MUTATE" << std::endl;
-    // std::cout << "probability_m = " << probability << std::endl;
-    // char t;
-    // std::cin >> t;
-
     for(int i = 0; i < chromosome_length; i++)
     {
         if(flip(probability, random_seed, srand_offset*chromosome_length + i))
@@ -142,6 +153,26 @@ void Individual::mutate(double probability, int random_seed, int srand_offset)
             chromosome[i] = 1 - chromosome[i];
             mutate_data[mutate_count] = i;
             mutate_count++;
+        }
+    }
+}
+
+void Individual::swap_mutate(double probability, int random_seed, int srand_offset)
+{
+    for(int i = 0; i < chromosome_length; i++)
+    {
+        if(flip(probability, random_seed, srand_offset*chromosome_length + i))
+        {
+            int temp_1 = chromosome[i];
+            for(int j = 0; j < chromosome_length; j++)
+            {
+                if(chromosome[j] == temp_1)
+                {
+                    chromosome[i] = chromosome[j];
+                    chromosome[j] = temp_1;
+                    break;
+                }
+            }
         }
     }
 }
@@ -164,17 +195,9 @@ void Individual::print_ind()
     // int zero = 0;
     for(int i = 0; i < chromosome_length; i++)
     {
-        if(i != chromosome_length - 1)
-        {
-            std::cout << chromosome[i];
-            // chromosome[i] == 1 ? one++ : zero++;
-        }
-        else
-        {
-            // chromosome[i] == 1 ? one++ : zero++;
-            std::cout << chromosome[i] << std::endl;
-        }
+        std::cout << chromosome[i] << " ";
     }
+    std::cout << std::endl;
     // std::cout << "1s: " << (float)one/chromosome_length << std::endl;
     // std::cout << "0s: " << (float)zero/chromosome_length << std::endl;
 }
