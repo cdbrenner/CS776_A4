@@ -21,10 +21,10 @@ class GA
         Population *grandparent = nullptr;
 
     public:
-        GA(int argc, char *argv[], int eval_option, int iterator, int ga_variant, double mutation_probability, double xover_probability);
+        GA(int argc, char *argv[], int iterator, int ga_variant, double mutation_probability, double xover_probability);
         ~GA();
 
-        void setup_options(int argc, char *argv[], int eval_option, int iterator);
+        void setup_options(int argc, char *argv[], int iterator);
         void set_option_xover_prob(double xover_probability);
         void set_option_mutation_prob(double mutation_probability);
         void set_option_extinction_delay(double extinction_delay_count);
@@ -34,6 +34,7 @@ class GA
         void set_option_input_file_o(std::string iteration);
         void set_option_output_file(std::string iteration);
         void set_option_output_file_o(std::string iteration);
+        void set_eval_option(int);
         void set_file_names(int iteration);
 
         void init(int eval_option, int report_option);

@@ -2,15 +2,14 @@
 #include <cmath>
 #include <random>
 #include "individual.h"
+#include "eval_results.h"
 
-void deleter(double*);
-double eval(Individual&, int choice_1, int choice_2, int random_seed, int srand_offset,
-                    int variable_count, int bit_length[], double scaler[], double max_variable_value[], int weight_normal, int weight_special);
-double eval_o(Individual&, int choice_1, int choice_2, int random_seed, int srand_offset,
-                    int variable_count, int bit_length[], double scaler[], double max_variable_value[], int weight_normal, int weight_special);
+void eval(Individual&, Eval_results& results, double** tour_data, int tour_count, int choice, int random_seed, int srand_offset);
+
 double* decode(Individual&, int bit_length, double scaler);
 double* decode_withVarsOfDiffBitLength_onlyPositive(Individual&, int variable_count, int bit_length[], double scaler[]);
 
-//FLOOR PLANNING
-double floorPlanning(Individual& individual, int variable_count, int bit_length[], double scaler[], double max_variable_value[],
-                                    int weight_normal, int weight_special, int option);
+// TSP
+void TSP(Individual& individual, double** tour_data, int tour_count, int choice, Eval_results& results);
+double distance(double x1, double y1, double x2, double y2);
+double distance_geo(double x1, double y1, double x2, double y2);

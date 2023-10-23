@@ -1,45 +1,11 @@
 #include "evaluate.h"
 
-void deleter(double* variables)
+void eval(Individual& individual, Eval_results& results, double** tour_data, int tour_count, int choice, int random_seed, int srand_offset)
 {
-    if(variables != nullptr)
-        delete[] variables;
-}
-
-double eval(Individual& individual, int choice, int choice_2, int random_seed, int srand_offset,
-                     int variable_count, int bit_length[], double scaler[], double max_variable_value[], int weight_normal, int weight_special)
-{
-    double fitness;
-
-    switch(choice)
-    {
-        case 1:
-            try
-                {fitness = floorPlanning(individual, variable_count, bit_length, scaler, max_variable_value, weight_normal, weight_special, choice_2);}
-            catch(double variable_value[])
-                {throw variable_value;}
-            break;
-    }
-
-    return fitness;
-}
-
-double eval_o(Individual& individual, int choice, int choice_2, int random_seed, int srand_offset,
-                        int variable_count, int bit_length[], double scaler[], double max_variable_value[], int weight_normal, int weight_special)
-{
-    double objective;
-
-    switch(choice)
-    {
-        case 1:
-            try
-                {objective = floorPlanning(individual, variable_count, bit_length, scaler, max_variable_value, weight_normal, weight_special, choice_2);}
-            catch(double variable_value[])
-                {throw variable_value;}
-            break;
-    }
-
-    return objective;
+    try
+        {TSP(individual, tour_data, tour_count, choice, results);}
+    catch(std::string error_message)
+        {throw error_message;}
 }
 
 double* decode(Individual& individual, int bit_length, double scaler)
@@ -92,68 +58,94 @@ double* decode_withVarsOfDiffBitLength_onlyPositive(Individual& individual, int 
     return variables;
 }
 
-double floorPlanning(Individual& individual, int variable_count, int bit_length[], double scaler[], double max_variable_value[], int weight_normal, int weight_special, int choice)
+void TSP(Individual& individual, double** tour_data, int tour_count, int choice, Eval_results& results)
 {
-    double fitness = -1;
-    double *variables = decode_withVarsOfDiffBitLength_onlyPositive(individual, variable_count, bit_length, scaler);
-    
-    //SETTING DIMENSIONS OF THE INDIVIDUAL IS DONE SO THAT THE DIMENSIONS CAN BE PULLED LATER IN void Population::report(int generation, int option) FOR LOGGING
-    individual.set_dimensions(variables, variable_count);
+    double x1 = -1;
+    double y1 = -1;
+    double x2 = -1;
+    double y2 = -1;
 
-    double *catch_block_data = new double[2];
-
-    try
+    results.objective = 0;
+    for(int i = 1; i < individual.get_chromosome_length(); i++)
     {
-        for(int i = 0; i < variable_count; i++)
+        int city_1 = individual.get_chromosome()[i - 1];
+        x1 = -1;
+        y1 = -1;
+        int city_2 = individual.get_chromosome()[i];
+        x2 = -1;
+        y2 = -1;
+
+        for(int j = 0; j < tour_count; j++)
         {
-            variables[i] > max_variable_value[i] ? catch_block_data[0] = i : 0;
-            variables[i] > max_variable_value[i] ? catch_block_data[1] = variables[i] : 0;
-            variables[i] > max_variable_value[i] ? throw(catch_block_data) : 0;
+            if(city_1 == tour_data[j][0])
+            {
+                x1 = tour_data[j][1];
+                y1 = tour_data[j][2];
+                break;
+            }
         }
+
+        for(int j = 0; j < tour_count; j++)
+        {
+            if(city_2 == tour_data[j][0])
+            {
+                x2 = tour_data[j][1];
+                y2 = tour_data[j][2];
+                break;
+            }
+        }
+
+        if(choice == 1)
+            results.objective += distance(x1,y1,x2,y2);
+        else if(choice == 2)
+            results.objective += distance_geo(x1,y1,x2,y2);
     }
-    catch(double variable_value)
-        {throw variable_value;}
-
-    double living = 1.5*pow((8 + variables[0]),2);
-    living < 120 ? living = 300 + weight_normal*(120 - living) : 0;
-    living > 300 ? living = 300 + weight_normal*(living - 300) : 0;
-
-    double kitchen = (6 + variables[1])*(6 + variables[2]);
-
-    if(kitchen < 50)
-    {
-        kitchen = 120 + weight_special*(50 - kitchen);
-    }
-    else if(kitchen > 120)
-    {
-        kitchen = 120 + weight_special*(kitchen - 120);
-    }
-
-    double hall = 5.5*(3.5 + variables[3]);
-    hall < 19 ? hall = 72 + weight_normal*(19 - hall) : 0;
-    hall > 72 ? hall = 72 + weight_normal*(hall - 72) : 0;
-
-    double bed_1 = 1.5*pow((10 + variables[4]),2);
-    bed_1 < 100 ? bed_1 = 180 + weight_normal*(100 - bed_1) : 0;
-    bed_1 > 180 ? bed_1 = 180 + weight_normal*(bed_1 - 180) : 0;
-
-    double bed_2 = 1.5*pow((9 + variables[5]),2);
-    bed_2 < 100 ? bed_2 = 180 + weight_normal*(100 - bed_2) : 0;
-    bed_2 > 180 ? bed_2 = 180 + weight_normal*(bed_2 - 180) : 0;
-
-    double bed_3 = 1.5*pow((8 + variables[6]),2);
-    bed_3 < 100 ? bed_3 = 180 + weight_normal*(100 - bed_3) : 0;
-    bed_3 > 180 ? bed_3 = 180 + weight_normal*(bed_3 - 180) : 0;
-
-    double objective_function = living + 2*kitchen + hall + bed_1 + bed_2 + bed_3;
     
-    fitness = 50000 - objective_function;
 
-    deleter(variables);
-    deleter(catch_block_data);
+    if(results.objective != 0)
+        results.fitness = 1/results.objective;
+    else if(results.objective == 0)
+    {
+        std::string error_message = "Evaluation failed because objective function equals 0.";
+        throw(error_message);
+    }
+    else if(results.objective < 0)
+    {
+        std::string error_message = "Evaluation failed because objective function is less than 0.";
+        throw(error_message);
+    }
+}
 
-    if(choice != 2)
-        return fitness;
-    else
-        return objective_function;
+double distance(double x1, double y1, double x2, double y2)
+{
+    return nearbyint(sqrt(pow((x2 - x1),2) + pow((y2 - y1),2)));
+}
+
+double distance_geo(double x1, double y1, double x2, double y2)
+{
+    double pi = 3.141592;
+
+    double deg_x1 = nearbyint(x1);
+    double min_x1 = x1 - deg_x1;
+    double latitude_x1 = pi * (deg_x1 + 5 * min_x1/3)/180;
+
+    double deg_y1 = nearbyint(y1);
+    double min_y1 = y1 - deg_y1;
+    double longitude_y1 = pi * (deg_y1 + 5 * min_y1/3)/180;
+
+    double deg_x2 = nearbyint(x2);
+    double min_x2 = x2 - deg_x2;
+    double latitude_x2 = pi * (deg_x2 + 5 * min_x2/3)/180;
+
+    double deg_y2 = nearbyint(y2);
+    double min_y2 = y2 - deg_y2;
+    double longitude_y2 = pi * (deg_y2 + 5 * min_y2/3)/180;
+
+    double rrr = 6378.388;
+
+    double q1 = cos(longitude_y2 - longitude_y1);
+    double q2 = cos(latitude_x2 - latitude_x1);
+    double q3 = cos(latitude_x2 + latitude_x1);
+
+    return (int) (rrr * acos(0.5*((1 + q1)*q2 - (1 - q1)*q3)) + 1);
 }

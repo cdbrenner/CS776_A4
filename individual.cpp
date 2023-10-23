@@ -87,6 +87,11 @@ void Individual::set_dimensions(double* data, int count)
     }
 }
 
+void Individual::set_id(int id)
+{
+    this->id = id;
+}
+
 int* Individual::get_chromosome()
 {
     return chromosome;
@@ -97,14 +102,23 @@ int Individual::get_chromosome_length()
     return chromosome_length;
 }
 
-int* Individual::get_mutate_data()
+// int* Individual::get_mutate_data()
+// {
+//     return mutate_data;
+// }
+
+// int Individual::get_mutate_count()
+// {
+//     return mutate_count;
+// }
+int* Individual::get_mutate_data(int row)
 {
-    return mutate_data;
+    return swap_mutate_data[row];
 }
 
 int Individual::get_mutate_count()
 {
-    return mutate_count;
+    return swap_mutate_count;
 }
 
 int* Individual::get_transform_data()
@@ -132,6 +146,35 @@ double* Individual::get_dimensions()
     return dimensions;
 }
 
+int Individual::get_id()
+{
+    return id;
+}
+
+void Individual::init_TSP(int random_seed, int srand_offset)
+{
+    int fail_count = 0;
+    for(int i = 0; i < chromosome_length; i++)
+    {
+        one:
+        int value = random_index_in_range(1, (chromosome_length + 1), random_seed, srand_offset*chromosome_length + i + fail_count); // FOR A TOUR STARTING AT 'NODE 1', NOT 'NODE 0' (NODE 0 DOESN'T EXIST IN THIS IMPLEMENTATION)
+        if(i == 0)
+            chromosome[i] = value;
+        else
+        {
+            for(int j = 0; j < i; j++)
+            {
+                if(value == chromosome[j])
+                {
+                    fail_count++;
+                    goto one;
+                }
+            }
+            chromosome[i] = value;
+        }
+    }
+}
+
 void Individual::init(int random_seed, int srand_offset)
 {
     for(int i = 0; i < chromosome_length; i++)
@@ -139,40 +182,46 @@ void Individual::init(int random_seed, int srand_offset)
         chromosome[i] = flip(0.5f, random_seed, srand_offset*chromosome_length + i);
     }
 
+    // UNIT TEST OBJECT: COMMENTED OUT FOR TSP
     transform_data[0] = 1;
 }
 
-
-void Individual::mutate(double probability, int random_seed, int srand_offset)
-{
-    mutate_count = 0;
-    for(int i = 0; i < chromosome_length; i++)
-    {
-        if(flip(probability, random_seed, srand_offset*chromosome_length + i))
-        {
-            chromosome[i] = 1 - chromosome[i];
-            mutate_data[mutate_count] = i;
-            mutate_count++;
-        }
-    }
-}
+// NORMAL MUTATE: COMMENTED OUT FOR CURRENT TSP PROGRAM
+// void Individual::mutate(double probability, int random_seed, int srand_offset)
+// {
+//     mutate_count = 0;
+//     for(int i = 0; i < chromosome_length; i++)
+//     {
+//         if(flip(probability, random_seed, srand_offset*chromosome_length + i))
+//         {
+//             chromosome[i] = 1 - chromosome[i];
+//             mutate_data[mutate_count] = i;
+//             mutate_count++;
+//         }
+//     }
+// }
 
 void Individual::swap_mutate(double probability, int random_seed, int srand_offset)
 {
+    swap_mutate_count = 0;
+    int fail_count = 0;
     for(int i = 0; i < chromosome_length; i++)
     {
         if(flip(probability, random_seed, srand_offset*chromosome_length + i))
         {
-            int temp_1 = chromosome[i];
-            for(int j = 0; j < chromosome_length; j++)
+            one:
+            int index_to_swap = random_index_in_range(0, chromosome_length, random_seed, srand_offset*chromosome_length + i + fail_count);
+            if(index_to_swap == i)
             {
-                if(chromosome[j] == temp_1)
-                {
-                    chromosome[i] = chromosome[j];
-                    chromosome[j] = temp_1;
-                    break;
-                }
+                fail_count++;
+                goto one;
             }
+
+            int temp_1 = chromosome[i];
+            chromosome[i] = chromosome[index_to_swap];
+            chromosome[index_to_swap] = temp_1;
+            swap_mutate_data[swap_mutate_count][0] = i;
+            swap_mutate_data[swap_mutate_count++][1] = index_to_swap;
         }
     }
 }
@@ -191,15 +240,11 @@ void Individual::copy_individual_data(const Individual& rhs)
 
 void Individual::print_ind()
 {
-    // int one = 0;
-    // int zero = 0;
     for(int i = 0; i < chromosome_length; i++)
     {
         std::cout << chromosome[i] << " ";
     }
     std::cout << std::endl;
-    // std::cout << "1s: " << (float)one/chromosome_length << std::endl;
-    // std::cout << "0s: " << (float)zero/chromosome_length << std::endl;
 }
 
 void Individual::print_transform_data()

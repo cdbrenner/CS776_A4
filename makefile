@@ -15,6 +15,11 @@ helpers.o: helpers.cpp helpers.h individual.h
 
 population.o: population.cpp population.h
 	g++ -c population.cpp
+# population.o: population.cpp population.h partition/partition_debug.cpp partition/partition.h
+# 	g++ -c population.cpp partition/partition_debug.cpp
+
+# partition_debug.o: partition/partition_debug.cpp partition/partition.h
+# 	g++ -c partition/partition_debug.cpp
 
 test.o: test.cpp test.h
 	g++ -c test.cpp

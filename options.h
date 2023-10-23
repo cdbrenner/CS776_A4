@@ -13,7 +13,7 @@ struct Options
     int GA_iteration;
     int print_precision;
     int print_precision_o;
-    int evaluation_mode;
+    int eval_option;
     long int random_seed;
     int population_size;
     int chromosome_length;
@@ -76,5 +76,10 @@ struct Options
         double* max_variable_value = nullptr;
         int penalty_weight_1;
         int penalty_weight_2;
+
+    // TSP OPTIONS:
+        std::string TSP_filename;
+        double** m_tour_data = nullptr;
+        int tour_data_count = 0;
 
 };
